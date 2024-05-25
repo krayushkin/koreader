@@ -1,7 +1,7 @@
 local BD = require("ui/bidi")
 local ConfirmBox = require("ui/widget/confirmbox")
 local DocumentRegistry = require("document/documentregistry")
-local TelegramApi = require("apps/cloudstorage/telegram-bot-api/core")
+local TelegramApi = require("apps/cloudstorage/telegram-bot-lua/core")
 local InfoMessage = require("ui/widget/infomessage")
 local MultiInputDialog = require("ui/widget/multiinputdialog")
 local UIManager = require("ui/uimanager")
@@ -23,7 +23,13 @@ end
 
 function Telegram:run(password)
     TelegramApi.token = password
-    TelegramApi.get_updates(1, TelegramApi.getCurrentOffset(), 100, {"message", "document"})
+    local success = TelegramApi.get_updates(1, TelegramApi.getCurrentOffset(), 100, {"message", "document"})
+
+    if type(success) == "table" and success.result then
+        local updates = success.result
+        print(string.format("Size = %d", #updates))
+    end
+    
     return {
              {text = "BookWithoutSpaces", type = "file", url = "/usr/book1"}, 
              {text = "First book.mobi", type = "file", url = "/usr/book2"},

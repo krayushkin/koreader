@@ -741,7 +741,7 @@ function CloudStorage:configCloud(type)
             table.insert(cs_servers,{
                 name = fields[1],
                 password = fields[2],
-                url = "UrlPlaceholder",
+                url = fields[1], -- same as name, since for teleram url does't matter
                 type = "telegram",
             })
         end
@@ -807,7 +807,7 @@ function CloudStorage:editCloudServer(item)
                 if server.name == updated_config.text and server.address == updated_config.address then
                     server.name = fields[1]
                     server.password = fields[2]
-                    server.url = "UrlPlaceholder"
+                    server.url = fields[1] -- same as name, since for telegram url does't matter
                     cs_servers[i] = server
                     break
                 end
