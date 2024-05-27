@@ -15,11 +15,11 @@
 
 ]] local api = {}
 local https = require('ssl.https')
-local multipart = require('multipart-post')
+local multipart = require('apps/cloudstorage/telegram-bot-lua/multipart-post')
 local ltn12 = require('ltn12')
 local json = require('rapidjson')
-local html = require('htmlEntities')
-local config = require('config')
+local html = require('apps/cloudstorage/telegram-bot-lua/htmlEntities')
+local config = require('apps/cloudstorage/telegram-bot-lua/config')
 
 function api.configure(token, debug)
     if not token or type(token) ~= 'string' then

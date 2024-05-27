@@ -11,34 +11,84 @@ local T = require("ffi/util").template
 local _ = require("gettext")
 
 local Telegram = {}
+Telegram.offset = 0
 
 
 
 
-
-local function getCurrentOffset()
-    TelegramApi.currentOffset = (TelegramApi.currentOffset or -1) + 1
-    return TelegramApi.currentOffset
+local function concatTableKeys(t)
+    local keys = {}
+    for k,v in pairs(t) do
+        table.insert(keys, k)
+    end
+    local keys_str = table.concat(keys, ", ")
+    return keys_str
 end
 
 function Telegram:run(password)
     TelegramApi.token = password
-    local success = TelegramApi.get_updates(1, TelegramApi.getCurrentOffset(), 100, {"message", "document"})
 
-    if type(success) == "table" and success.result then
+    local limitNumberOfUpdates = 100
+    local success = TelegramApi.get_updates(1, Telegram.offset, limitNumberOfUpdates, {"message"})
+
+    local books = {}
+    print(json.encode(success))
+    if type(success) == "table" and type(success.result) == "table" then
         local updates = success.result
         print(string.format("Size = %d", #updates))
+        for i, update in ipairs(updates) do
+            print("Update N =", i)
+            if type(update) == "table" and type(update.message) == "table" then
+                local document = update.message.document
+                local entities = update.message.entities
+                local text = update.message.text
+                if type(document) == "table" and document.file_name and document.file_id then
+                    table.insert(books, {text = document.file_name, file_id = document.file_id, type = "file"})
+                elseif type(entities) == "table" then
+                    for _, entitie in ipairs(entities) do
+                        if type(entitie) == "table" and entitie.type == "url" and entitie.length and entitie.offset and text then
+                            local offset_index = entitie.offset + 1
+                            local url = text:sub(offset_index, offset_index + entitie.length)
+                            table.insert(books, {text = url, url = url, type = "file"})
+                        end
+                    end
+                end
+                Telegram.offset = update.update_id and update.update_id + 1 or Telegram.offset
+            end
+        end
     end
-    
-    return {
-             {text = "BookWithoutSpaces", type = "file", url = "/usr/book1"}, 
-             {text = "First book.mobi", type = "file", url = "/usr/book2"},
-             {text = "My favorite book.epub", type = "file", url = "/usr/book3"},
-             {text = "Folder with spaces", type = "folder", url = "/usr/book4"},
-     }
+    return books
+end
+   
+
+
+function downloadFile(url, local_path)
+    socketutil:set_timeout(socketutil.FILE_BLOCK_TIMEOUT, socketutil.FILE_TOTAL_TIMEOUT)
+    local code, headers, status = socket.skip(1, http.request{
+        url     = url,
+        method  = "GET",
+        sink    = ltn12.sink.file(io.open(local_path, "w")),
+    })
+    socketutil:reset_timeout()
+    if code ~= 200 then
+        logger.warn("DropBoxApi: cannot download file:", status or code)
+    end
+    return code, (headers or {}).etag
 end
 
+
+
+
 function Telegram:downloadFile(item, password, path, callback_close)
+    
+    if item.url then
+
+        
+    elseif item.file_id then
+        local file_name = item.text
+        
+    end
+
     local code_response = TelegramApi:downloadFile(item.url, password, path)
     if code_response == 200 then
             UIManager:show(InfoMessage:new{
@@ -69,15 +119,15 @@ book file or http/https link. Select books from list and download it (max size <
         text_token = item.password
     end
     self.settings_dialog = MultiInputDialog:new {
-        title = _("Telegram bot file transfer"),
+        title = _("Telegram bot"),
         fields = {
             {
                 text = text_name,
-                hint = _("Telegram bot name"),
+                hint = _("Name (any, for menu entry only)"),
             },
             {
                 text = text_token,
-                hint = _("Telegram bot token"),
+                hint = _("Bot token (from BotFather)"),
             },
         },
         buttons = {
