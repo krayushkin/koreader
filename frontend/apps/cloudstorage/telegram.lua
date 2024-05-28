@@ -10,8 +10,7 @@ local util = require("util")
 local T = require("ffi/util").template
 local _ = require("gettext")
 
-local Telegram = {}
-Telegram.offset = 0
+local Telegram = {offset = 0}
 
 
 
@@ -60,12 +59,20 @@ function Telegram:run(password)
     return books
 end
    
-
+function Telegram:getFileUrl(file_id, token)
+    TelegramApi.token = token
+    success = TelegramApi.get_file(file_id)
+    if type(success) == "table" and type(success.result) == "table" then
+        return "https://api.telegram.org/file/bot" .. token .. "/" .. file_path
+    else
+        return false
+    end
+end
 
 function downloadFile(url, local_path)
     socketutil:set_timeout(socketutil.FILE_BLOCK_TIMEOUT, socketutil.FILE_TOTAL_TIMEOUT)
     local code, headers, status = socket.skip(1, http.request{
-        url     = url,
+        url     = ,
         method  = "GET",
         sink    = ltn12.sink.file(io.open(local_path, "w")),
     })
@@ -80,16 +87,18 @@ end
 
 
 function Telegram:downloadFile(item, password, path, callback_close)
-    
-    if item.url then
-
+    local url = false
+    if item.file_id and type(item.file_id) == "string" then
+        
+    end
+    local code = downloadFile(item.url, path)
         
     elseif item.file_id then
         local file_name = item.text
         
     end
 
-    local code_response = TelegramApi:downloadFile(item.url, password, path)
+    local code_response = downloadFile(item.url, password, path)
     if code_response == 200 then
             UIManager:show(InfoMessage:new{
                 text = T(_("File saved!\n")),
@@ -100,11 +109,6 @@ function Telegram:downloadFile(item, password, path, callback_close)
             timeout = 3,
         })
     end
-end
-
-function Telegram:downloadFileNoUI(url, password, path)
-    local code_response = TelegramApi:downloadFile(url, password, path)
-    return code_response == 200
 end
 
 
