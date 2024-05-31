@@ -14,22 +14,30 @@ local logger = require("logger")
 local T = require("ffi/util").template
 local _ = require("gettext")
 
-local Telegram = {offset = 0}
+-- TODO
+-- Deal with files with size more then 20MB
+-- Test connection loss. On get_updates and on get_file
+-- Refactor. Minimize size of functions
+-- Remove unused code from telegram-bot-lua/core
+-- Replace print with logger function
+-- Implement functionality with download using plain url
+-- Better test user entered fields
+-- Implement Info button and test it
+-- Test functionality with with several telegram bot api tokens
+-- Maybe add refresh button for force refresh?
+-- Or just leave message for user if list of updates is empty
 
-local function concatTableKeys(t)
-    local keys = {}
-    for k,v in pairs(t) do
-        table.insert(keys, k)
-    end
-    local keys_str = table.concat(keys, ", ")
-    return keys_str
-end
+local Telegram = {
+    offset = 0 -- offset for get_updates
+}
+
 
 function Telegram:run(password)
     TelegramApi.token = password
 
     local limitNumberOfUpdates = 100
-    local success = TelegramApi.get_updates(1, Telegram.offset, limitNumberOfUpdates, {"message"})
+    local timeout = 1
+    local success = TelegramApi.get_updates(timeout, Telegram.offset, limitNumberOfUpdates, {"message"})
 
     local books = {}
     print(json.encode(success))
@@ -45,7 +53,7 @@ function Telegram:run(password)
                 if type(document) == "table" and document.file_name and document.file_id then
                     table.insert(books, {text = document.file_name, file_id = document.file_id, type = "file"})
                 elseif type(entities) == "table" then
-                    for _, entitie in ipairs(entities) do
+                    for __, entitie in ipairs(entities) do
                         if type(entitie) == "table" and entitie.type == "url" and entitie.length and entitie.offset and text then
                             print("Url detected")
                             local offset_index = entitie.offset + 1
