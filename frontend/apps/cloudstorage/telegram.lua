@@ -7,6 +7,10 @@ local MultiInputDialog = require("ui/widget/multiinputdialog")
 local UIManager = require("ui/uimanager")
 local ReaderUI = require("apps/reader/readerui")
 local util = require("util")
+local socket = require("socket")
+local socketutil = require("socketutil")
+local http = require("socket.http")
+
 local T = require("ffi/util").template
 local _ = require("gettext")
 
@@ -46,6 +50,7 @@ function Telegram:run(password)
                 elseif type(entities) == "table" then
                     for _, entitie in ipairs(entities) do
                         if type(entitie) == "table" and entitie.type == "url" and entitie.length and entitie.offset and text then
+                            print("Url detected")
                             local offset_index = entitie.offset + 1
                             local url = text:sub(offset_index, offset_index + entitie.length)
                             table.insert(books, {text = url, url = url, type = "file"})
@@ -53,6 +58,7 @@ function Telegram:run(password)
                     end
                 end
                 Telegram.offset = update.update_id and update.update_id + 1 or Telegram.offset
+                print(Telegram.offset)
             end
         end
     end
@@ -63,53 +69,57 @@ function Telegram:getFileUrl(file_id, token)
     TelegramApi.token = token
     success = TelegramApi.get_file(file_id)
     if type(success) == "table" and type(success.result) == "table" then
+        file_path = success.result.file_path
         return "https://api.telegram.org/file/bot" .. token .. "/" .. file_path
     else
         return false
     end
 end
 
-function downloadFile(url, local_path)
+function downloadFileFromUrl(url, local_path)
     socketutil:set_timeout(socketutil.FILE_BLOCK_TIMEOUT, socketutil.FILE_TOTAL_TIMEOUT)
     local code, headers, status = socket.skip(1, http.request{
-        url     = ,
+        url     = url,
         method  = "GET",
         sink    = ltn12.sink.file(io.open(local_path, "w")),
     })
     socketutil:reset_timeout()
     if code ~= 200 then
-        logger.warn("DropBoxApi: cannot download file:", status or code)
+        logger.warn("Telegram cannot download file:", status or code)
     end
-    return code, (headers or {}).etag
+    return code
 end
 
 
 
 
-function Telegram:downloadFile(item, password, path, callback_close)
-    local url = false
+function Telegram:downloadFile(item, address, username, password, path, callback_close)
+    print(item, address, username, password, path, callback_close)
+    local url
     if item.file_id and type(item.file_id) == "string" then
-        
+        -- we need first get url using getFileUrl method
+        url = Telegram:getFileUrl(item.file_id, password)
+        print(url)
+    elseif item.url and type(item.url) == "string" then
+        url = item.url
     end
-    local code = downloadFile(item.url, path)
-        
-    elseif item.file_id then
-        local file_name = item.text
-        
-    end
-
-    local code_response = downloadFile(item.url, password, path)
-    if code_response == 200 then
+    if url then
+        local code = downloadFileFromUrl(url, path)
+        if code == 200 then
+                UIManager:show(InfoMessage:new{
+                    text = T(_("File saved!\n")),
+                })
+        else
             UIManager:show(InfoMessage:new{
-                text = T(_("File saved!\n")),
+                text = T(_("Could not save file.\n")),
+                timeout = 3,
             })
+        end
     else
-        UIManager:show(InfoMessage:new{
-            text = T(_("Could not save file.\n")),
-            timeout = 3,
-        })
+        print("can't get valid url")
     end
 end
+
 
 
 function Telegram:config(item, callback)
