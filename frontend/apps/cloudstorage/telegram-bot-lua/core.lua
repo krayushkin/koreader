@@ -18,7 +18,6 @@ local https = require('ssl.https')
 local multipart = require('apps/cloudstorage/telegram-bot-lua/multipart-post')
 local ltn12 = require('ltn12')
 local json = require('rapidjson')
-local html = require('apps/cloudstorage/telegram-bot-lua/htmlEntities')
 local config = require('apps/cloudstorage/telegram-bot-lua/config')
 local logger = require('logger')
 
@@ -81,7 +80,6 @@ function api.request(endpoint, parameters, file)
     if not jdat then
         return false, res
     elseif not jdat.ok then
-        logger.warn(url)
         local output = '\n' .. jdat.description .. ' [' .. jdat.error_code .. ']\n\nPayload: '
         output = output .. json.encode(parameters) .. '\n'
         logger.warn(output)
@@ -156,9 +154,6 @@ function api.send_message(message, text, message_thread_id, parse_mode, entities
     reply_markup = type(reply_markup) == 'table' and json.encode(reply_markup) or reply_markup
     message = (type(message) == 'table' and message.chat and message.chat.id) and message.chat.id or message
     parse_mode = (type(parse_mode) == 'boolean' and parse_mode == true) and 'MarkdownV2' or parse_mode
-    if disable_web_page_preview == nil then
-        disable_web_page_preview = true
-    end
     local success, res = api.request(config.endpoint .. api.token .. '/sendMessage', {
         ['chat_id'] = message,
         ['message_thread_id'] = message_thread_id,
@@ -261,27 +256,6 @@ function api.copy_messages(chat_id, from_chat_id, message_ids, message_thread_id
     return success, res
 end
 
-function api.send_photo(chat_id, photo, message_thread_id, caption, parse_mode, caption_entities, has_spoiler,
-    disable_notification, protect_content, reply_parameters, reply_markup) -- https://core.telegram.org/bots/api#sendphoto
-    caption_entities = type(caption_entities) == 'table' and json.encode(caption_entities) or caption_entities
-    reply_parameters = type(reply_parameters) == 'table' and json.encode(reply_parameters) or reply_parameters
-    reply_markup = type(reply_markup) == 'table' and json.encode(reply_markup) or reply_markup
-    local success, res = api.request(config.endpoint .. api.token .. '/sendPhoto', {
-        ['chat_id'] = chat_id,
-        ['message_thread_id'] = message_thread_id,
-        ['caption'] = caption,
-        ['parse_mode'] = parse_mode,
-        ['caption_entities'] = caption_entities,
-        ['has_spoiler'] = has_spoiler,
-        ['disable_notification'] = disable_notification,
-        ['protect_content'] = protect_content,
-        ['reply_parameters'] = reply_to_message_id,
-        ['reply_markup'] = reply_markup
-    }, {
-        ['photo'] = photo
-    })
-    return success, res
-end
 -- documentation update point
 function api.send_audio(chat_id, audio, message_thread_id, caption, parse_mode, caption_entities, duration, performer,
     title, thumbnail, disable_notification, protect_content, reply_parameters, reply_markup) -- https://core.telegram.org/bots/api#sendaudio
@@ -331,32 +305,6 @@ function api.send_document(chat_id, document, message_thread_id, thumbnail, capt
     return success, res
 end
 
-function api.send_video(chat_id, video, message_thread_id, duration, width, height, caption, parse_mode, has_spoiler,
-    supports_streaming, disable_notification, protect_content, reply_parameters, reply_markup) -- https://core.telegram.org/bots/api#sendvideo
-    caption_entities = type(caption_entities) == 'table' and json.encode(caption_entities) or caption_entities
-    reply_parameters = type(reply_parameters) == 'table' and json.encode(reply_parameters) or reply_parameters
-    reply_markup = type(reply_markup) == 'table' and json.encode(reply_markup) or reply_markup
-    local success, res = api.request(config.endpoint .. api.token .. '/sendVideo', {
-        ['chat_id'] = chat_id,
-        ['message_thread_id'] = message_thread_id,
-        ['duration'] = duration,
-        ['width'] = width,
-        ['height'] = height,
-        ['caption'] = caption,
-        ['parse_mode'] = parse_mode,
-        ['caption_entities'] = caption_entities,
-        ['has_spoiler'] = has_spoiler,
-        ['supports_streaming'] = supports_streaming,
-        ['disable_notification'] = disable_notification,
-        ['protect_content'] = protect_content,
-        ['reply_parameters'] = reply_parameters,
-        ['reply_markup'] = reply_markup
-    }, {
-        ['video'] = video,
-        ['thumbnail'] = thumbnail
-    })
-    return success, res
-end
 
 function api.send_animation(chat_id, animation, message_thread_id, duration, width, height, thumbnail, caption,
     parse_mode, caption_entities, has_spoiler, disable_notification, protect_content, reply_parameters, reply_markup) -- https://core.telegram.org/bots/api#sendanimation
@@ -878,32 +826,6 @@ function api.leave_chat(chat_id) -- https://core.telegram.org/bots/api#leavechat
     return success, res
 end
 
-function api.get_chat(chat_id) -- https://core.telegram.org/bots/api#getchat
-    local success, result = api.request(config.endpoint .. api.token .. '/getChat', {
-        ['chat_id'] = chat_id
-    })
-    if not success or not success.result then
-        return success, result
-    end
-    -- Little workaround to try and get more information!
-    if success.result.username and success.result.type == 'private' then
-        local old_timeout = https.TIMEOUT
-        https.TIMEOUT = 1
-        local scrape, scrape_res = https.request('https://t.me/' .. success.result.username)
-        https.TIMEOUT = old_timeout
-        if scrape_res ~= 200 then
-            return success, result
-        end
-        local bio = scrape:match('%<div class="tgme_page_description "%>(.-)%</div%>')
-        if not bio then
-            return success
-        end
-        bio = bio:gsub('%b<>', '')
-        bio = html.decode(bio)
-        success.result.bio = bio
-    end
-    return success, result
-end
 
 function api.get_chat_administrators(chat_id) -- https://core.telegram.org/bots/api#getchatadministrators
     local success, res = api.request(config.endpoint .. api.token .. '/getChatAdministrators', {
