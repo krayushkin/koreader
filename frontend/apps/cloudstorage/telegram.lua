@@ -16,18 +16,6 @@ local ltn12 = require('ltn12')
 local T = require("ffi/util").template
 local _ = require("gettext")
 
--- TODO
--- Deal with files with size more then 20MB
--- Test connection loss. On get_updates and on get_file
--- Refactor. Minimize size of functions
--- Remove unused code from telegram-bot-lua/core
--- Replace print with logger function
--- Implement functionality with download using plain url
--- Implement Info button and test it
--- Test functionality with with several telegram bot api tokens
--- Maybe add refresh button for force refresh?
--- Or just leave message for user if list of updates is empty
-
 local Telegram = {
     offset = 0 -- offset for get_updates
 }
