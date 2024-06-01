@@ -54,15 +54,6 @@ function Telegram:run(password)
                     if DocumentRegistry:hasProvider(document.file_name) or G_reader_settings:isTrue("show_unsupported") then
                         table.insert(books, {text = document.file_name, file_id = document.file_id, type = "file"})
                     end
-                elseif type(entities) == "table" then
-                    for __, entitie in ipairs(entities) do
-                        if type(entitie) == "table" and entitie.type == "url" and entitie.length and entitie.offset and text then
-                            logger.dbg("Url detected")
-                            local offset_index = entitie.offset + 1
-                            local url = text:sub(offset_index, offset_index + entitie.length)
-                            table.insert(books, {text = url, url = url, type = "file"})
-                        end
-                    end
                 end
                 Telegram.offset = update.update_id and update.update_id + 1 or Telegram.offset
                 logger.dbg("offset for next get_updates request:", Telegram.offset)
@@ -111,8 +102,6 @@ function Telegram:downloadFile(item, address, username, password, path, callback
     if item.file_id and type(item.file_id) == "string" then
         -- we need first get url using getFileUrl method
         url = Telegram:getFileUrl(item.file_id, password)
-    elseif item.url and type(item.url) == "string" then
-        url = item.url
     end
     if url then
         local code = downloadFileFromUrl(url, path)
