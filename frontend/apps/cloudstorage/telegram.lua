@@ -48,8 +48,6 @@ function Telegram:run(password)
             logger.dbg("Process update N =", i)
             if type(update) == "table" and type(update.message) == "table" then
                 local document = update.message.document
-                local entities = update.message.entities
-                local text = update.message.text
                 if type(document) == "table" and document.file_name and document.file_id then
                     if DocumentRegistry:hasProvider(document.file_name) or G_reader_settings:isTrue("show_unsupported") then
                         table.insert(books, {text = document.file_name, file_id = document.file_id, type = "file"})
