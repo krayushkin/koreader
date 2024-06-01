@@ -20,6 +20,7 @@ local ltn12 = require('ltn12')
 local json = require('rapidjson')
 local html = require('apps/cloudstorage/telegram-bot-lua/htmlEntities')
 local config = require('apps/cloudstorage/telegram-bot-lua/config')
+local logger = require('logger')
 
 function api.configure(token, debug)
     if not token or type(token) ~= 'string' then
@@ -43,7 +44,7 @@ function api.request(endpoint, parameters, file)
     end
     if api.debug then
         local output = json.encode(parameters)
-        print(output)
+        logger.dbg(output)
     end
     if file and next(file) ~= nil then
         local file_type, file_name = next(file)
@@ -72,7 +73,7 @@ function api.request(endpoint, parameters, file)
         ['sink'] = ltn12.sink.table(response)
     })
     if not success then
-        print('Connection error [' .. res .. ']')
+        logger.err('Connection error [' .. res .. ']')
         return false, res
     end
     local jstr = table.concat(response)
@@ -80,9 +81,10 @@ function api.request(endpoint, parameters, file)
     if not jdat then
         return false, res
     elseif not jdat.ok then
+        logger.warn(url)
         local output = '\n' .. jdat.description .. ' [' .. jdat.error_code .. ']\n\nPayload: '
         output = output .. json.encode(parameters) .. '\n'
-        print(output)
+        logger.warn(output)
         return false, jdat
     end
     return jdat, res
