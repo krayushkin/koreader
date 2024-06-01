@@ -11,7 +11,7 @@
 
       Version 2.0-0
       Copyright (c) 2017-2024 Matthew Hesketh
-      See LICENSE for details
+      See COPING for details
 
 ]] local api = {}
 local https = require('ssl.https')
