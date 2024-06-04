@@ -168,7 +168,9 @@ function CloudStorage:openCloudServer(url)
         if NetworkMgr:willRerunWhenConnected(function() self:openCloudServer(url) end) then
             return
         end
-        tbl, e = Telegram:run(self.password)
+        local cs_settings = self:readSettings()
+        local download_dir = cs_settings:readSetting("download_dir") or G_reader_settings:readSetting("lastdir")
+        tbl, e = Telegram:run(self.password, url, download_dir)
     end
     if tbl then
         self:switchItemTable(url, tbl)
@@ -228,6 +230,7 @@ function CloudStorage:downloadFile(item)
                 WebDav:downloadFile(unit_item, address, username, password, path_dir, callback_close)
             elseif self.type == "telegram" then
                 Telegram:downloadFile(unit_item, address, username, password, path_dir, callback_close)
+                self:updateItems(1, false) -- refresh appearance of downloaded menu items
             end
         end)
         UIManager:show(InfoMessage:new{
