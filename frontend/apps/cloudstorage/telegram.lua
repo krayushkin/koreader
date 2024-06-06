@@ -5,6 +5,7 @@ local TelegramApi = require("apps/cloudstorage/telegram-bot-lua/core")
 local InfoMessage = require("ui/widget/infomessage")
 local MultiInputDialog = require("ui/widget/multiinputdialog")
 local UIManager = require("ui/uimanager")
+local filemanagerutil = require("apps/filemanager/filemanagerutil")
 local ReaderUI = require("apps/reader/readerui")
 local util = require("util")
 local lfs = require("libs/libkoreader-lfs")
@@ -165,11 +166,28 @@ function Telegram:downloadFile(item, address, username, password, path, callback
     end
 end
 
+local function read_token_from_home()
+    local token
+    local token_file_name = "token.txt"
+    local token_dir_1 = G_reader_settings:readSetting("home_dir")
+    local token_dir_2 = filemanagerutil.getDefaultDir()
+    local token_dir = file_exist(token_dir_1, token_file_name) and token_dir_1 or file_exist(token_dir_2, token_file_name) and token_dir_2
+    if token_dir then
+        -- read token from first line
+        for line in  io.lines(token_dir .. "/" .. token_file_name) do
+            token = line
+            break
+        end
+    end
+    return token
+end
 
 function Telegram:config(item, callback)
     local text_info = _([[
 First ask @BotFather to create a bot in Telegram client application.
-Paste provided token in token field. Send message with book (as file) to your bot.
+Create and copy file named "token.txt" with provided token in root or home directory of your reader.
+Alternatively, enter or paste provided token in token field manually.
+Send message with book (as file) to your bot.
 Select book from list to download. The maximum file size to download is 20 MB.
 (Note, if you add your bot to group, consider to Allow Groups and disable Privacy mode)
 ]])
@@ -178,7 +196,10 @@ Select book from list to download. The maximum file size to download is 20 MB.
     if item then
         text_name = item.text
         text_token = item.password
+    else
+        text_token = read_token_from_home()
     end
+
     self.settings_dialog = MultiInputDialog:new {
         title = _("Telegram bot"),
         fields = {
