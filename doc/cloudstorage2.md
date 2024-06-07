@@ -2,37 +2,49 @@
 
 Methods that providers need to implement:
 
-## configFilelds - table with description of dialog fields (optional)
+## configForm - table with description of configuration form (optional)
 
-Array of tables
+configForm data object description:
 
 ```
-{
-    {
-        field_name = String (required),
-        optional = (true | false) (optional, default = false),
-        type = ("string" | "bool" | "number") (optional, default = "string"),
-        help = String (optional, default = ""),
-    },
-}
+registerProvider("telegram", { 
+    supportMultipleSelect = (true | false) (optional, default = false),
+    configForm = {
+        title = String (required),
+        info = String (required),
+        fields = {
+            {
+                field_name = String (required),
+                optional = (true | false) (optional, default = false),
+                type = ("string" | "bool" | "number") (optional, default = "string"),
+                desc = String (optional, default = ""),
+            },
+            ...
+        }
+    }
+})
 ```
 
 Example:
 
 ```
-configFields = {
-    {
-        field_name = "Name",
-        optional = false,
-        type = "string",
-        help = "Any, just for entry name",
-    },
-    {
-        field_name = "Token",
-        optional = false,
-        type = "string",
-        help = "from BotFather",
-    },
+configForm = {
+    title = _("Telegram bot configuration"),
+    info = _([[Some long description how to properly configure provider]]),
+    fields = {
+        {
+            field_name = _("Name"),
+            optional = false,
+            type = "string",
+            desc = _("Any, just for entry name"),
+        },
+        {
+            field_name = _("Token"),
+            optional = false,
+            type = "string",
+            desc = _("from BotFather"),
+        },
+    }
 }
 ```
 
@@ -42,7 +54,46 @@ configFields = {
 
 ## list()
 
-## download()
+`list(url) -> listItem` return list of remote (or maybe localy) objects that current provider provide.
+
+Input arguments:
+
+`url` - current url that user want to see. Sequence table with string values that
+represent hierarchy tree. For example: `{"home", "user", "books"}`. `{}` is root derectory.
+
+Output structure:
+
+```
+listItems = {
+    {
+        -- displayed name
+        name = String (requred), 
+        
+        -- hint for CS
+        type = ("file" | "folder" | "other") (requred), 
+        
+        -- small text displayed on right of item 
+        mandatory = (String | nil) (optional, defalut = nil),
+       
+        -- regular or dimmed text
+        dim = (true | false) (optional, default = false),         
+
+        -- user may click on item
+        clickable = (true | false) (optional, default = true),         
+     
+        -- item displayed bold text
+        bold = (true | false) (optional, default = false),        
+        
+        -- any data, you may use it for any metadata, file_id for example
+        data = AnyType (optional, default = nil),
+    },
+    ...
+
+}
+```
+
+## download(listItems)
+
 
 ## sync()
 
