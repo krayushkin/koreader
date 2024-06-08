@@ -174,10 +174,7 @@ local function read_token_from_home()
     local token_dir = file_exist(token_dir_1, token_file_name) and token_dir_1 or file_exist(token_dir_2, token_file_name) and token_dir_2
     if token_dir then
         -- read token from first line
-        for line in  io.lines(token_dir .. "/" .. token_file_name) do
-            token = line
-            break
-        end
+        token = io.lines(token_dir .. "/" .. token_file_name)()
     end
     return token
 end
