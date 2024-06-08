@@ -50,8 +50,6 @@ configForm = {
 
 ## config(data) - function used for first configuration and provider initialization
 
-## info()
-
 ## list()
 
 `list(url) -> listItem` return list of remote (or maybe localy) objects that current provider provide.
@@ -65,6 +63,7 @@ Output structure:
 
 ```
 listItems = {
+    -- sequence of listItem
     {
         -- displayed name
         name = String (requred), 
@@ -92,10 +91,25 @@ listItems = {
 }
 ```
 
-## download(listItems)
+## download(listItem, fullpath)
+
+Function recieve listItem (object from listItems sequence).
+CS calls this function when user clicked on list item with `type` == `"file"` or `"other"`.
+
+If clicked `type` is `"file"` than CS asks user for download path and new file name.
+After that CS calls `download(listItem, fullpath)`.
+
+If clicked `type` is `"other"` CS just calls `download(listItem)` without `fullpath` argument.
+
+If clicked `type` is `"folder"` CS calls `list(url)` without calling `download()`.
+
+Provider must download file represented by `listItem` within `fullpath` full name.
+
 
 
 ## sync()
+
+TODO
 
 # Configuration workflow:
 
