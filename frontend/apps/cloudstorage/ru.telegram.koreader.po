@@ -1,0 +1,84 @@
+#: telegram.lua:31
+msgid ""
+"Could not get data from server.\n"
+"Please check your connection and configuration."
+msgstr ""
+"Невозможно получить данные от сервера.\n"
+"Пожалуйста, проверьте ваше интернет соединение и конфигурацию."
+
+
+#: telegram.lua:56 telegram.lua:130
+msgid "Downloaded"
+msgstr "Скачано"
+
+#: telegram.lua:60
+msgid "File too big"
+msgstr "Файл слишком большой"
+
+#: telegram.lua:81
+msgid ""
+"There are no new files.\n"
+"Send message with book (as file) to your bot and check for new files again."
+msgstr ""
+"Новых файлов нет.\n"
+"Отправьте сообщение с книгой (как файл) вашему боту и проверьте наличие новых файлов снова."
+
+#: telegram.lua:85
+msgid "Cleanup the list and check for new files..."
+msgstr "Очистить список и проверить наличие новых файлов..."
+
+#: telegram.lua:85
+msgid "Check for new files..."
+msgstr "Проверить наличие новых файлов..."
+
+
+#: telegram.lua:163
+msgid "Could not get file url for download or file too large"
+msgstr "Невозможно получить ссылку для скачивания с сервера или файл слишком большой"
+
+#: telegram.lua:183
+msgid ""
+"First ask @BotFather to create a bot in Telegram client application.\n"
+"Create and copy file named \"token.txt\" with provided token in root or home "
+"directory of your reader.\n"
+"Alternatively, enter or paste provided token in token field manually.\n"
+"Send message with book (as file) to your bot.\n"
+"Select book from list to download. The maximum file size to download is 20 "
+"MB.\n"
+"(Note, if you add your bot to group, consider to Allow Groups and disable "
+"Privacy mode)\n"
+msgstr ""
+"Попросите @BotFather создать вам бота в клиентском приложении Telegram.\n"
+"Создайте файл с именем \"token.txt\" в корневой папке вашего ридера и сохраните туда ваш токен.\n"
+"Либо вы можете ввести токен в поле для токена вручную.\n"
+"Отправьте сообщение с книгой (как файл) вашему боту.\n"
+"Нажмите на книгу, которую хотите скачать из списка.\n"
+"Максимальный размер для скачивания - 20MB.\n"
+"(Будьте внимательны, если вы хотите добавить вашего бота в группу вы должны "
+"разрешить Добавление в группы и выключить Приватный режим.)\n"
+
+#: telegram.lua:201
+msgid "Telegram bot"
+msgstr "Телеграм бот"
+
+#: telegram.lua:205
+msgid "Name (any, for menu entry only)"
+msgstr "Имя (любое, просто для записи меню)"
+
+#: telegram.lua:209
+msgid "Bot token (from @BotFather)"
+msgstr "Токен бота (полученный от @BotFather)"
+
+
+#: telegram.lua:261
+msgid ""
+"Username: @%1\n"
+"First name: %2\n"
+"Can join groups: %3\n"
+"Can read all group messages: %4"
+msgstr ""
+"Имя пользователя (username) бота: @%1\n"
+"Имя бота: %2\n"
+"Можно добавлять в группы: %3\n"
+"Может видеть все сообщения в группах: %4"
+
