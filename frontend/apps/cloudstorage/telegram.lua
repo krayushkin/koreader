@@ -76,14 +76,18 @@ function Telegram:run(password, url, download_dir)
         error_message()
     end
 
+
     if #books == 0 then
         UIManager:show(InfoMessage:new{
             text = _("There are no new files.\nSend message with book (as file) to your bot and check for new files again."),
         })
+    else
+        table.insert(books, {text="", shortcut = nil, type = "other"}) -- add empty nonclickable list item (guard for missclick)
     end
 
     local check_button_text = #books > 0 and _("Cleanup the list and check for new files...") or _("Check for new files...")
     table.insert(books, {text = check_button_text, type="folder", bold=true})
+
     return books
 end
 
